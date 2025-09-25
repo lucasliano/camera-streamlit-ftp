@@ -2,12 +2,13 @@ import logging
 from datetime import datetime
 import streamlit as st
 from ftplib import FTP
+import os
 
 # --- Configuración ---
-FTP_HOST = '127.0.0.1'       # o la IP de tu host si estás en otra máquina
-FTP_PORT = 21
-FTP_USER = 'myuser'
-FTP_PASS = 'mypassword'
+FTP_HOST = os.getenv('FTP_HOST', '127.0.0.1')
+FTP_PORT = int(os.getenv('FTP_PORT', 21))
+FTP_USER = os.getenv('FTP_USER', 'myuser')
+FTP_PASS = os.getenv('FTP_PASS', 'mypassword')
 REMOTE_FILEPATH = 'raw_images/'
 
 # --- Configuración de Logging ---
@@ -19,6 +20,7 @@ logging.basicConfig(
 
 # --- Enviar imagen por cliente FTP ---
 def send_ftp(image):
+    ftp = None  # Inicializar ftp fuera del try para que esté disponible en finally
     try:
         logging.info("Iniciando proceso de subida FTP.")
         # Conexión FTP
@@ -29,11 +31,13 @@ def send_ftp(image):
         ftp.login(FTP_USER, FTP_PASS)
         logging.info(f"Login exitoso como usuario '{FTP_USER}'.")
         
+
         # Asegurarse de que el directorio remoto exista, si no, crearlo.
         try:
             ftp.cwd(REMOTE_FILEPATH)
             logging.info(f"Cambiado al directorio remoto: '{REMOTE_FILEPATH}'")
         except Exception:
+        except Exception as e:
             logging.warning(f"El directorio '{REMOTE_FILEPATH}' no existe. Intentando crearlo.")
             ftp.mkd(REMOTE_FILEPATH)
             ftp.cwd(REMOTE_FILEPATH)
@@ -57,6 +61,10 @@ def send_ftp(image):
         # Loguear el error completo con traceback para un diagnóstico detallado
         logging.error("Ocurrió un error durante la subida FTP.", exc_info=True)
         st.error(f"❌ Error al subir la imagen: {e}")
+    finally:
+        if ftp and ftp.sock:
+            logging.info("Cerrando conexión FTP.")
+            ftp.quit()
 
 
 # --- Interfaz Streamlit ---
