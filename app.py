@@ -60,7 +60,16 @@ def send_ftp(image):
 
 # --- Interfaz Streamlit ---
 st.set_page_config(page_title="Galería", layout="wide")
-st.markdown("<h1 style='text-align: center;'> Generador de Dataset</h1>", unsafe_allow_html=True)
+col1, col2 = st.columns([1, 2])
+with col1:
+    st.image("assets/giar_logo.png")#, width='stretch')
+with col2:
+    st.markdown("<h1 style='text-align: center;'>Generador de Dataset</h1>", unsafe_allow_html=True)
+
+    
+
+# st.image("assets/giar_logo.png", use_container_width=True)
+# st.markdown("<h1 style='text-align: center;'> Generador de Dataset</h1>", unsafe_allow_html=True)
 
 # --- Subida desde cámara o galería ---
 st.markdown("## 📤 Subir una imagen (cámara o galería)")

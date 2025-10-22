@@ -1,0 +1,40 @@
+# docker-compose.yml
+
+# run with
+#  % docker compose up -d --build
+# stop with
+#  % docker compose down
+services:
+  ftpd_server:
+    image: stilliard/pure-ftpd:hardened
+    container_name: ftpd-server
+    restart: always
+    ports:
+      - "21:21"
+      - "30000-30009:30000-30009"
+    environment:
+      PUBLICHOST: localhost
+      FTP_USER_NAME: myuser
+      FTP_USER_PASS: mypassword
+      FTP_USER_HOME: /home/myuser
+      TLS: 2
+    volumes:
+      - shared_ftp_data:/home/myuser
+    restart: always
+
+  camerastreamlitftp:
+    build:
+      context: .
+    container_name: camera-streamlit-ftp
+    ports:
+      - "8501:8501"
+    environment:
+      FTP_HOST: host.docker.internal
+      FTP_USER: myuser
+      FTP_PASS: mypassword
+    depends_on:
+      - ftpd_server
+    restart: always
+
+volumes:
+  shared_ftp_data:
